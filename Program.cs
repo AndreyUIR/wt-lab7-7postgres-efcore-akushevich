@@ -7,7 +7,7 @@ using wt_lab7_7postgres_efcore_akushevich.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = BuildConnectionString(builder.Configuration);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -247,4 +247,29 @@ static Dictionary<string, string[]> ValidateAccount(BankAccount account)
         .ToDictionary(
             g => g.Key,
             g => g.Select(r => r.ErrorMessage ?? "Ошибка валидации").ToArray());
+}
+static string BuildConnectionString(IConfiguration configuration)
+{
+    var databaseUrl = configuration["DATABASE_URL"];
+
+    // Локальный запуск: строка из appsettings
+    if (string.IsNullOrWhiteSpace(databaseUrl))
+    {
+        return configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException(
+                "Не найдена строка подключения DefaultConnection и переменная DATABASE_URL.");
+    }
+
+    // Render: разбираем URL вида postgresql://user:password@host[:port]/database
+    var uri = new Uri(databaseUrl);
+    var userInfo = uri.UserInfo.Split(':', 2);
+    var port = uri.Port > 0 ? uri.Port : 5432;
+
+    return
+        $"Host={uri.Host};" +
+        $"Port={port};" +
+        $"Database={uri.AbsolutePath.TrimStart('/')};" +
+        $"Username={Uri.UnescapeDataString(userInfo[0])};" +
+        $"Password={Uri.UnescapeDataString(userInfo[1])};" +
+        "SSL Mode=Disable";
 }
