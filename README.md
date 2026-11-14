@@ -1,189 +1,115 @@
-# WT-6. REST API на ASP.NET Core Minimal API
+# WT-7. PostgreSQL и Entity Framework Core
 
-Лабораторная работа № 6 по дисциплине «Web-технологии».
+Лабораторная работа № 7 по дисциплине «Web-технологии».
 Специальность: «Управление информационными ресурсами».
 
-**Автор:** Акушевич Андрей Сергеевич, группа УИР-1, 4 курс
-## Ссылки
-
-GitHub:
-https://github.com/AndreyUIR/wt-lab7-7postgres-efcore-akushevich
-
-Render:
-https://wt-lab7-7postgres-efcore-akushevich.onrender.com
+**Автор:** Акушевич Андрей Сергеевич, группа ______
 
 ## Описание
 
-REST API для управления банковскими счетами клиентов. Приложение
-создаёт, читает, изменяет и удаляет счета (CRUD), передаёт данные в
-формате JSON и возвращает корректные HTTP-статусы.
-
-Данные хранятся в памяти приложения (статический список `BankAccountStore`),
-база данных не используется. После перезапуска приложения данные
-возвращаются к начальным.
+REST API для управления банковскими счетами. Данные хранятся в
+PostgreSQL, доступ к базе выполняется через Entity Framework Core
+(подход Code First). Структура базы создаётся и обновляется миграциями,
+которые применяются автоматически при запуске приложения.
 
 ## Технологии
 
 - C# и ASP.NET Core Minimal API (.NET 9)
-- Формат обмена данными: JSON
-- Описание API: OpenAPI, Swagger UI
-- Контейнеризация: Docker
-- Публикация: Render (Web Service)
+- PostgreSQL и Entity Framework Core (провайдер Npgsql)
+- Миграции EF Core (Code First)
+- OpenAPI, Swagger UI (только в режиме разработки)
+- Docker, публикация на Render
 
 ## Структура проекта
 
 ```
 wt-lab7-7postgres-efcore-akushevich/
+├── Data/AppDbContext.cs
 ├── Models/BankAccount.cs
-├── Data/BankAccountStore.cs
+├── Migrations/
 ├── Program.cs
+├── appsettings.json
 ├── Dockerfile
 └── README.md
 ```
 
 ## Модель данных
 
-| Поле | Тип | Описание | Ограничения |
-|---|---|---|---|
-| `id` | число | идентификатор, задаётся сервером | — |
-| `ownerName` | строка | владелец счёта | обязательное, до 100 символов |
-| `accountNumber` | строка | номер счёта | обязательное, от 6 до 34 символов |
-| `balance` | число | баланс | от 0 до 1 000 000 000 |
-| `isActive` | логическое | счёт активен | — |
+| Поле | Тип | Описание |
+|---|---|---|
+| `id` | число | идентификатор, выдаётся базой |
+| `ownerName` | строка | владелец счёта (обязательное, до 100 символов) |
+| `accountNumber` | строка | номер счёта (от 6 до 34 символов) |
+| `balance` | число | баланс (от 0 до 1 000 000 000) |
+| `isActive` | логическое | счёт активен |
+| `createdAt` | дата и время (UTC) | выставляется сервером при создании |
 
 ## Эндпоинты
 
-| Метод | URL | Назначение | Успешный статус |
+| Метод | URL | Назначение | Статус |
 |---|---|---|---|
-| GET | `/` | проверить работу приложения | 200 |
+| GET | `/` | проверка приложения | 200 |
 | GET | `/api/info` | информация о приложении | 200 |
-| GET | `/api/accounts` | получить список счетов | 200 |
-| GET | `/api/accounts?search=...` | поиск по владельцу или номеру | 200 |
+| GET | `/api/accounts` | список счетов | 200 |
 | GET | `/api/accounts/{id}` | получить счёт | 200 / 404 |
+| GET | `/api/accounts/search?search=...` | поиск по владельцу или номеру | 200 |
+| GET | `/api/accounts/rich?min=...` | баланс больше порога | 200 |
+| GET | `/api/accounts/sorted` | сортировка по балансу | 200 |
+| GET | `/api/accounts/active` | активные счета | 200 |
+| GET | `/api/accounts/stats` | статистика по счетам | 200 |
 | POST | `/api/accounts` | создать счёт | 201 / 400 |
 | PUT | `/api/accounts/{id}` | изменить счёт | 200 / 400 / 404 |
 | DELETE | `/api/accounts/{id}` | удалить счёт | 204 / 404 |
 
-## HTTP-статусы
+## Локальный запуск
 
-| Статус | Когда возвращается |
-|---|---|
-| 200 OK | успешное получение или изменение |
-| 201 Created | счёт создан, в заголовке `Location` адрес нового счёта |
-| 204 No Content | счёт удалён, тела ответа нет |
-| 400 Bad Request | некорректные данные или сломанный JSON |
-| 404 Not Found | счёт с таким `id` не найден |
-
-## Примеры
-
-### Получение списка
-
-Запрос: `GET /api/accounts`
-
-Ответ `200 OK`:
-
-```json
-[
-  {
-    "id": 1,
-    "ownerName": "Акушевич Андрей Сергеевич",
-    "accountNumber": "BY01SAV0001",
-    "balance": 2000,
-    "isActive": true
-  }
-]
-```
-
-### Поиск
-
-Запрос: `GET /api/accounts?search=петр` возвращает счета, в имени
-владельца или номере которых есть «петр» (регистр не важен).
-
-### Создание счёта
-
-Запрос: `POST /api/accounts`
-
-```json
-{
-  "ownerName": "Новиков Сергей Олегович",
-  "accountNumber": "BY06SAV0006",
-  "balance": 1500.50,
-  "isActive": true
-}
-```
-
-Ответ `201 Created`, заголовок `Location: /api/accounts/6`:
-
-```json
-{
-  "id": 6,
-  "ownerName": "Новиков Сергей Олегович",
-  "accountNumber": "BY06SAV0006",
-  "balance": 1500.50,
-  "isActive": true
-}
-```
-
-### Изменение счёта
-
-Запрос: `PUT /api/accounts/6` с телом в том же формате. Ответ `200 OK`
-содержит изменённый счёт. Поле `id` изменить нельзя.
-
-### Удаление счёта
-
-Запрос: `DELETE /api/accounts/6`. Ответ `204 No Content`, тела нет.
-
-### Некорректные данные
-
-Запрос: `POST /api/accounts` с пустым `ownerName`.
-
-Ответ `400 Bad Request`:
-
-```json
-{
-  "title": "One or more validation errors occurred.",
-  "status": 400,
-  "errors": {
-    "OwnerName": ["Укажите владельца счёта"]
-  }
-}
-```
-
-### Счёт не найден
-
-`GET /api/accounts/999` возвращает `404 Not Found`.
-
-## Запуск
+1. Установить PostgreSQL и создать базу `wt_lab7`.
+2. Скопировать `appsettings.Development.example.json` в
+   `appsettings.Development.json` и указать свой пароль.
+3. Запустить приложение. Миграции применятся автоматически:
 
 ```bash
 dotnet run
 ```
 
-Порт указан в консоли в строке `Now listening on: ...`.
-## Запуск в Docker
+## Миграции
 
-Сборка образа (точка в конце обязательна):
+Создать миграцию после изменения модели:
+
+```bash
+dotnet ef migrations add ИмяМиграции
+```
+
+Применить миграции вручную:
+
+```bash
+dotnet ef database update
+```
+
+Список миграций и применённые миграции в базе:
+
+```bash
+dotnet ef migrations list
+```
+
+```sql
+SELECT * FROM "__EFMigrationsHistory";
+```
+
+## Переменные окружения
+
+| Переменная | Назначение |
+|---|---|
+| `DATABASE_URL` | адрес PostgreSQL в формате `postgresql://user:password@host/database` (на Render) |
+| `PORT` | порт HTTP-сервера, задаётся платформой |
+
+Пароли и строки подключения в репозитории не хранятся.
+
+## Запуск в Docker
 
 ```bash
 docker build -t wt-lab7-7postgres-efcore-akushevich .
+docker run --rm -p 10000:10000 -e DATABASE_URL="postgresql://user:password@host:5432/database" wt-lab7-7postgres-efcore-akushevich
 ```
 
-Запуск контейнера:
-
-```bash
-docker run --rm -p 10000:10000 wt-lab7-7postgres-efcore-akushevich
-```
-
-После запуска API доступен по адресу `http://localhost:10000`.
-
-Приложение слушает адрес `0.0.0.0` и порт из переменной окружения `PORT`
-(по умолчанию на Render это 10000).
-
-## Документация OpenAPI
-
-В режиме разработки (локальный запуск) доступны:
-
-- `/openapi/v1.json` — описание API в формате OpenAPI;
-- `/swagger` — Swagger UI, в нём можно выполнять запросы к API.
-
-На Render документация отключена (среда `Production`).
+Подставьте свой адрес базы вместо `host`.
