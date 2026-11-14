@@ -1,10 +1,16 @@
+using Microsoft.EntityFrameworkCore;
+using wt_lab7_7postgres_efcore_akushevich.Data;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
-using wt_lab7_7postgres_efcore_akushevich.Data;
 using wt_lab7_7postgres_efcore_akushevich.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
