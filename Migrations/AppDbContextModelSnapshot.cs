@@ -53,6 +53,53 @@ namespace wt_lab7_7postgres_efcore_akushevich.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("BankAccounts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AccountNumber = "BY01SAV0001",
+                            Balance = 2000m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            OwnerName = "Акушевич Андрей Сергеевич"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AccountNumber = "BY02CRD0002",
+                            Balance = 0m,
+                            CreatedAt = new DateTime(2026, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            OwnerName = "Петрова Анна Сергеевна"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AccountNumber = "BY03DEP0003",
+                            Balance = 5000m,
+                            CreatedAt = new DateTime(2026, 1, 3, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = false,
+                            OwnerName = "Сидоров Пётр Петрович"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            AccountNumber = "BY04DEP0004",
+                            Balance = 12000m,
+                            CreatedAt = new DateTime(2026, 1, 4, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            OwnerName = "Морозова Елена Викторовна"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            AccountNumber = "BY05SAV0005",
+                            Balance = 750m,
+                            CreatedAt = new DateTime(2026, 1, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = false,
+                            OwnerName = "Кузнецов Андрей Игоревич"
+                        });
                 });
 #pragma warning restore 612, 618
         }
