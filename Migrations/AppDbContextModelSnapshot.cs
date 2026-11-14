@@ -42,6 +42,11 @@ namespace wt_lab7_7postgres_efcore_akushevich.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -61,6 +66,7 @@ namespace wt_lab7_7postgres_efcore_akushevich.Migrations
                             AccountNumber = "BY01SAV0001",
                             Balance = 2000m,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "",
                             IsActive = true,
                             OwnerName = "Акушевич Андрей Сергеевич"
                         },
@@ -70,6 +76,7 @@ namespace wt_lab7_7postgres_efcore_akushevich.Migrations
                             AccountNumber = "BY02CRD0002",
                             Balance = 0m,
                             CreatedAt = new DateTime(2026, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "",
                             IsActive = true,
                             OwnerName = "Петрова Анна Сергеевна"
                         },
@@ -79,6 +86,7 @@ namespace wt_lab7_7postgres_efcore_akushevich.Migrations
                             AccountNumber = "BY03DEP0003",
                             Balance = 5000m,
                             CreatedAt = new DateTime(2026, 1, 3, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "",
                             IsActive = false,
                             OwnerName = "Сидоров Пётр Петрович"
                         },
@@ -88,6 +96,7 @@ namespace wt_lab7_7postgres_efcore_akushevich.Migrations
                             AccountNumber = "BY04DEP0004",
                             Balance = 12000m,
                             CreatedAt = new DateTime(2026, 1, 4, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "",
                             IsActive = true,
                             OwnerName = "Морозова Елена Викторовна"
                         },
@@ -97,6 +106,7 @@ namespace wt_lab7_7postgres_efcore_akushevich.Migrations
                             AccountNumber = "BY05SAV0005",
                             Balance = 750m,
                             CreatedAt = new DateTime(2026, 1, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "",
                             IsActive = false,
                             OwnerName = "Кузнецов Андрей Игоревич"
                         });

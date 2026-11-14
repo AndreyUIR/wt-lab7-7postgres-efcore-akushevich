@@ -1,22 +1,23 @@
-@baseUrl = http://localhost:5063
+@renderUrl = http://localhost:5063
+@renderUrl = https://wt-lab7-7postgres-efcore-akushevich.onrender.com
 
 ### Информация о приложении
-GET {{baseUrl}}/api/info
+GET {{renderUrl}}/api/info
 
 ### Список счетов
-GET {{baseUrl}}/api/accounts
+GET {{renderUrl}}/api/accounts
 
 ### Счёт по id
-GET {{baseUrl}}/api/accounts/1
+GET {{renderUrl}}/api/accounts/1
 
 ### Несуществующий счёт (ожидаем 404)
-GET {{baseUrl}}/api/accounts/999
+GET {{renderUrl}}/api/accounts/999
 
 ### Поиск
-GET {{baseUrl}}/api/accounts/search?search=иванов
+GET {{renderUrl}}/api/accounts/search?search=иванов
 
 ### Создать счёт
-POST {{baseUrl}}/api/accounts
+POST {{renderUrl}}/api/accounts
 Content-Type: application/json
 
 {
@@ -27,7 +28,7 @@ Content-Type: application/json
 }
 
 ### Изменить счёт 1
-PUT {{baseUrl}}/api/accounts/1
+PUT {{renderUrl}}/api/accounts/1
 Content-Type: application/json
 
 {
@@ -38,10 +39,10 @@ Content-Type: application/json
 }
 
 ### Удалить счёт 1
-DELETE {{baseUrl}}/api/accounts/1
+DELETE {{renderUrl}}/api/accounts/1
 
 ### Некорректные данные (ожидаем 400)
-POST {{baseUrl}}/api/accounts
+POST {{renderUrl}}/api/accounts
 Content-Type: application/json
 
 {
@@ -51,13 +52,13 @@ Content-Type: application/json
   "isActive": true
 }
 ### LINQ: баланс больше 1000
-GET {{baseUrl}}/api/accounts/rich?min=1000
+GET {{renderUrl}}/api/accounts/rich?min=1000
 
 ### LINQ: сортировка по балансу
-GET {{baseUrl}}/api/accounts/sorted
+GET {{renderUrl}}/api/accounts/sorted
 
 ### LINQ: активные счета
-GET {{baseUrl}}/api/accounts/active
+GET {{renderUrl}}/api/accounts/active
 
 ### LINQ: статистика
-GET {{baseUrl}}/api/accounts/stats
+GET {{renderUrl}}/api/accounts/stats

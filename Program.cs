@@ -190,6 +190,7 @@ app.MapPut("/api/accounts/{id:int}", async (int id, BankAccount updated, AppDbCo
     account.AccountNumber = updated.AccountNumber;
     account.Balance = updated.Balance;
     account.IsActive = updated.IsActive;
+    account.Description = updated.Description;
 
     await db.SaveChangesAsync();
 

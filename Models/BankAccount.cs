@@ -20,4 +20,7 @@ public class BankAccount
     public bool IsActive { get; set; }
 
     public DateTime CreatedAt { get; set; }
+
+    [StringLength(500, ErrorMessage = "Описание не более 500 символов")]
+    public string Description { get; set; } = string.Empty;
 }
