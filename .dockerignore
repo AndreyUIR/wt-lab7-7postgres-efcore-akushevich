@@ -1,0 +1,9 @@
+bin/
+obj/
+.git/
+.vs/
+.vscode/
+Dockerfile
+.dockerignore
+README.md
+requests.http

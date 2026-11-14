@@ -1,0 +1,57 @@
+@baseUrl = http://localhost:10000
+@renderUrl = https://wt-lab7-7postgres-efcore-akushevich.onrender.com
+
+### Информация о приложении
+GET {{renderUrl}}/api/info
+
+### Список счетов
+GET {{renderUrl}}/api/accounts
+
+### Поиск
+GET {{renderUrl}}/api/accounts?search=петр
+
+### Счёт по id
+GET {{renderUrl}}/api/accounts/6
+
+### Несуществующий счёт
+GET {{renderUrl}}/api/accounts/999
+
+### Создать счёт
+POST {{renderUrl}}/api/accounts
+Content-Type: application/json
+
+{
+  "ownerName": "Новиков Сергей Олегович",
+  "accountNumber": "BY06SAV0006",
+  "balance": 1500.50,
+  "isActive": true
+}
+### Изменить счёт 6
+PUT {{renderUrl}}/api/accounts/6
+Content-Type: application/json
+
+{
+  "ownerName": "Новиков Сергей Олегович",
+  "accountNumber": "BY06SAV0006",
+  "balance": 2500.00,
+  "isActive": false
+}
+
+### Удалить счёт 6
+DELETE {{renderUrl}}/api/accounts/6
+### Некорректные данные (ожидаем 400)
+POST {{renderUrl}}/api/accounts
+Content-Type: application/json
+
+{
+  "ownerName": "",
+  "accountNumber": "1",
+  "balance": -5,
+  "isActive": true
+}
+
+### Сломанный JSON (ожидаем 400)
+POST {{renderUrl}}/api/accounts
+Content-Type: application/json
+
+{ "ownerName": "Тест",
