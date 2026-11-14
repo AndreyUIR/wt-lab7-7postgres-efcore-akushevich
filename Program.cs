@@ -96,6 +96,64 @@ app.MapGet("/api/accounts/search", async (string? search, AppDbContext db) =>
 .WithSummary("Поиск счетов по владельцу или номеру")
 .Produces<List<BankAccount>>(StatusCodes.Status200OK);
 
+// ---------- LINQ 1. Фильтрация: баланс больше порога ----------
+app.MapGet("/api/accounts/rich", async (decimal? min, AppDbContext db) =>
+{
+    var threshold = min ?? 1000m;
+
+    var accounts = await db.BankAccounts
+        .Where(a => a.Balance > threshold)
+        .ToListAsync();
+
+    return Results.Ok(accounts);
+})
+.WithTags("LINQ")
+.WithSummary("Счета с балансом больше порога (по умолчанию 1000)");
+
+// ---------- LINQ 2. Сортировка по балансу ----------
+app.MapGet("/api/accounts/sorted", async (AppDbContext db) =>
+{
+    var accounts = await db.BankAccounts
+        .OrderBy(a => a.Balance)
+        .ToListAsync();
+
+    return Results.Ok(accounts);
+})
+.WithTags("LINQ")
+.WithSummary("Счета по возрастанию баланса");
+
+// ---------- LINQ 3. Выборка с условием и сортировкой ----------
+app.MapGet("/api/accounts/active", async (AppDbContext db) =>
+{
+    var accounts = await db.BankAccounts
+        .Where(a => a.IsActive)
+        .OrderBy(a => a.OwnerName)
+        .ToListAsync();
+
+    return Results.Ok(accounts);
+})
+.WithTags("LINQ")
+.WithSummary("Активные счета по алфавиту владельцев");
+
+// ---------- LINQ 4 (собственный). Статистика по счетам ----------
+app.MapGet("/api/accounts/stats", async (AppDbContext db) =>
+{
+    var total = await db.BankAccounts.CountAsync();
+    var active = await db.BankAccounts.CountAsync(a => a.IsActive);
+    var totalBalance = await db.BankAccounts.SumAsync(a => a.Balance);
+    var average = await db.BankAccounts.AverageAsync(a => (decimal?)a.Balance);
+
+    return Results.Ok(new
+    {
+        total,
+        active,
+        totalBalance,
+        averageBalance = average ?? 0m
+    });
+})
+.WithTags("LINQ")
+.WithSummary("Количество счетов, сумма и средний баланс");
+
 // ---------- Создание ----------
 app.MapPost("/api/accounts", async (BankAccount account, AppDbContext db) =>
 {
@@ -104,6 +162,7 @@ app.MapPost("/api/accounts", async (BankAccount account, AppDbContext db) =>
         return Results.ValidationProblem(errors);
 
     account.Id = 0; // идентификатор выдаёт база, значение клиента игнорируем
+    account.CreatedAt = DateTime.UtcNow;
 
     db.BankAccounts.Add(account);
     await db.SaveChangesAsync();

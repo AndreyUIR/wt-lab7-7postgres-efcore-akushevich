@@ -50,3 +50,14 @@ Content-Type: application/json
   "balance": -5,
   "isActive": true
 }
+### LINQ: баланс больше 1000
+GET {{baseUrl}}/api/accounts/rich?min=1000
+
+### LINQ: сортировка по балансу
+GET {{baseUrl}}/api/accounts/sorted
+
+### LINQ: активные счета
+GET {{baseUrl}}/api/accounts/active
+
+### LINQ: статистика
+GET {{baseUrl}}/api/accounts/stats
