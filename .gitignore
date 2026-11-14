@@ -482,3 +482,5 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+# Локальные настройки с паролем
+appsettings.Development.json

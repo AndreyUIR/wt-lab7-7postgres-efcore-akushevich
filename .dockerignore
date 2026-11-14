@@ -7,3 +7,5 @@ Dockerfile
 .dockerignore
 README.md
 requests.http
+appsettings.Development.json
+*.sql
