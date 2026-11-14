@@ -1,8 +1,8 @@
-using Microsoft.EntityFrameworkCore;
-using wt_lab7_7postgres_efcore_akushevich.Data;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using Microsoft.EntityFrameworkCore;
+using wt_lab7_7postgres_efcore_akushevich.Data;
 using wt_lab7_7postgres_efcore_akushevich.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,37 +41,30 @@ app.MapGet("/", () => "Minimal API работает!");
 
 app.MapGet("/api/info", () =>
 {
-        return new
+    return new
     {
         Application = "Bank Accounts API",
-        Technology = "ASP.NET Core Minimal API",
-        Version = "1.1",
-        Description = "REST API банковских счетов"
+        Technology = "ASP.NET Core Minimal API + EF Core + PostgreSQL",
+        Version = "2.0"
     };
 })
 .WithTags("Info")
 .WithSummary("Информация о приложении");
 
-app.MapGet("/api/accounts", (string? search) =>
+// ---------- Получение списка ----------
+app.MapGet("/api/accounts", async (AppDbContext db) =>
 {
-    var accounts = BankAccountStore.Accounts.AsEnumerable();
-
-    if (!string.IsNullOrWhiteSpace(search))
-    {
-        accounts = accounts.Where(a =>
-            a.OwnerName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-            a.AccountNumber.Contains(search, StringComparison.OrdinalIgnoreCase));
-    }
-
-    return Results.Ok(accounts.ToList());
+    var accounts = await db.BankAccounts.OrderBy(a => a.Id).ToListAsync();
+    return Results.Ok(accounts);
 })
 .WithTags("Accounts")
-.WithSummary("Получить список счетов (с поиском по параметру search)")
+.WithSummary("Получить список счетов")
 .Produces<List<BankAccount>>(StatusCodes.Status200OK);
 
-app.MapGet("/api/accounts/{id:int}", (int id) =>
+// ---------- Получение по идентификатору ----------
+app.MapGet("/api/accounts/{id:int}", async (int id, AppDbContext db) =>
 {
-    var account = BankAccountStore.Accounts.FirstOrDefault(a => a.Id == id);
+    var account = await db.BankAccounts.FirstOrDefaultAsync(a => a.Id == id);
 
     if (account == null)
         return Results.NotFound();
@@ -83,17 +76,37 @@ app.MapGet("/api/accounts/{id:int}", (int id) =>
 .Produces<BankAccount>(StatusCodes.Status200OK)
 .Produces(StatusCodes.Status404NotFound);
 
-app.MapPost("/api/accounts", (BankAccount account) =>
+// ---------- Поиск (LINQ → SQL) ----------
+app.MapGet("/api/accounts/search", async (string? search, AppDbContext db) =>
+{
+    var query = db.BankAccounts.AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        var text = search.ToLower();
+        query = query.Where(a =>
+            a.OwnerName.ToLower().Contains(text) ||
+            a.AccountNumber.ToLower().Contains(text));
+    }
+
+    var accounts = await query.OrderBy(a => a.Id).ToListAsync();
+    return Results.Ok(accounts);
+})
+.WithTags("Accounts")
+.WithSummary("Поиск счетов по владельцу или номеру")
+.Produces<List<BankAccount>>(StatusCodes.Status200OK);
+
+// ---------- Создание ----------
+app.MapPost("/api/accounts", async (BankAccount account, AppDbContext db) =>
 {
     var errors = ValidateAccount(account);
     if (errors.Count > 0)
         return Results.ValidationProblem(errors);
 
-    account.Id = BankAccountStore.Accounts.Count == 0
-        ? 1
-        : BankAccountStore.Accounts.Max(a => a.Id) + 1;
+    account.Id = 0; // идентификатор выдаёт база, значение клиента игнорируем
 
-    BankAccountStore.Accounts.Add(account);
+    db.BankAccounts.Add(account);
+    await db.SaveChangesAsync();
 
     return Results.Created($"/api/accounts/{account.Id}", account);
 })
@@ -102,9 +115,10 @@ app.MapPost("/api/accounts", (BankAccount account) =>
 .Produces<BankAccount>(StatusCodes.Status201Created)
 .ProducesValidationProblem();
 
-app.MapPut("/api/accounts/{id:int}", (int id, BankAccount updated) =>
+// ---------- Изменение ----------
+app.MapPut("/api/accounts/{id:int}", async (int id, BankAccount updated, AppDbContext db) =>
 {
-    var account = BankAccountStore.Accounts.FirstOrDefault(a => a.Id == id);
+    var account = await db.BankAccounts.FirstOrDefaultAsync(a => a.Id == id);
 
     if (account == null)
         return Results.NotFound();
@@ -118,6 +132,8 @@ app.MapPut("/api/accounts/{id:int}", (int id, BankAccount updated) =>
     account.Balance = updated.Balance;
     account.IsActive = updated.IsActive;
 
+    await db.SaveChangesAsync();
+
     return Results.Ok(account);
 })
 .WithTags("Accounts")
@@ -126,14 +142,16 @@ app.MapPut("/api/accounts/{id:int}", (int id, BankAccount updated) =>
 .Produces(StatusCodes.Status404NotFound)
 .ProducesValidationProblem();
 
-app.MapDelete("/api/accounts/{id:int}", (int id) =>
+// ---------- Удаление ----------
+app.MapDelete("/api/accounts/{id:int}", async (int id, AppDbContext db) =>
 {
-    var account = BankAccountStore.Accounts.FirstOrDefault(a => a.Id == id);
+    var account = await db.BankAccounts.FirstOrDefaultAsync(a => a.Id == id);
 
     if (account == null)
         return Results.NotFound();
 
-    BankAccountStore.Accounts.Remove(account);
+    db.BankAccounts.Remove(account);
+    await db.SaveChangesAsync();
 
     return Results.NoContent();
 })

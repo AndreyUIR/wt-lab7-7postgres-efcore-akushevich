@@ -1,23 +1,22 @@
-@baseUrl = http://localhost:10000
-@renderUrl = https://wt-lab7-7postgres-efcore-akushevich.onrender.com
+@baseUrl = http://localhost:5063
 
 ### Информация о приложении
-GET {{renderUrl}}/api/info
+GET {{baseUrl}}/api/info
 
 ### Список счетов
-GET {{renderUrl}}/api/accounts
-
-### Поиск
-GET {{renderUrl}}/api/accounts?search=петр
+GET {{baseUrl}}/api/accounts
 
 ### Счёт по id
-GET {{renderUrl}}/api/accounts/6
+GET {{baseUrl}}/api/accounts/1
 
-### Несуществующий счёт
-GET {{renderUrl}}/api/accounts/999
+### Несуществующий счёт (ожидаем 404)
+GET {{baseUrl}}/api/accounts/999
+
+### Поиск
+GET {{baseUrl}}/api/accounts/search?search=иванов
 
 ### Создать счёт
-POST {{renderUrl}}/api/accounts
+POST {{baseUrl}}/api/accounts
 Content-Type: application/json
 
 {
@@ -26,8 +25,9 @@ Content-Type: application/json
   "balance": 1500.50,
   "isActive": true
 }
-### Изменить счёт 6
-PUT {{renderUrl}}/api/accounts/6
+
+### Изменить счёт 1
+PUT {{baseUrl}}/api/accounts/1
 Content-Type: application/json
 
 {
@@ -37,10 +37,11 @@ Content-Type: application/json
   "isActive": false
 }
 
-### Удалить счёт 6
-DELETE {{renderUrl}}/api/accounts/6
+### Удалить счёт 1
+DELETE {{baseUrl}}/api/accounts/1
+
 ### Некорректные данные (ожидаем 400)
-POST {{renderUrl}}/api/accounts
+POST {{baseUrl}}/api/accounts
 Content-Type: application/json
 
 {
@@ -49,9 +50,3 @@ Content-Type: application/json
   "balance": -5,
   "isActive": true
 }
-
-### Сломанный JSON (ожидаем 400)
-POST {{renderUrl}}/api/accounts
-Content-Type: application/json
-
-{ "ownerName": "Тест",
