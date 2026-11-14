@@ -112,4 +112,10 @@ docker build -t wt-lab7-7postgres-efcore-akushevich .
 docker run --rm -p 10000:10000 -e DATABASE_URL="postgresql://user:password@host:5432/database" wt-lab7-7postgres-efcore-akushevich
 ```
 
-Подставьте свой адрес базы вместо `host`.
+## Ссылки
+
+GitHub:
+https://github.com/AndreyUIR/wt-lab7-7postgres-efcore-akushevich
+
+Render:
+https://wt-lab7-7postgres-efcore-akushevich.onrender.com
